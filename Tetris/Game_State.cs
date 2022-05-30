@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 namespace Tetris
 {
     //Den här klassen kommer kombinera alla funktioner i de andra .cs klasserna för att hantera hur spelet ändras medans man spelar det.//
@@ -59,23 +59,28 @@ namespace Tetris
             }
             return true;
         }
+        //de två kommande funktionerna hanterar sparandet av block.
+        //Båda dessa fungerar på samma sätt men refererar till två olikan objekt//
         public void Hold_Block()
         {
+            //Om boolen CanHold är falsk eller om ditt nuvarande block är ett combo block dvs 
+            // blockets Id är över 7 händer inget.
             if (!CanHold || CurrentBlock.Id > 7)
             {
                 return;
             }
-
+            //Om du inte har ett ssparat block kommer det sparade blocket sättas som ditt nuvarande och ditt 
+            // nuvarande kommer sättas som ett nytt block.
             if (Held_Block == null)
             {
                 Held_Block = CurrentBlock;
                 CurrentBlock = Block_Queue.Generate_Block();
             }
+            //Men om du redan har ett sparat block kommer de byta plats.
+            
             else
             {
-                Block tmp = CurrentBlock;
-                CurrentBlock = Held_Block;
-                Held_Block = tmp;
+                (Held_Block, CurrentBlock) = (CurrentBlock, Held_Block);
             }
 
             CanHold = false;
@@ -95,9 +100,7 @@ namespace Tetris
             }
             else
             {
-                Block tmp = CurrentBlock;
-                CurrentBlock = Held_Block2;
-                Held_Block2 = tmp;
+                (Held_Block2, CurrentBlock) = (CurrentBlock, Held_Block2);
             }
 
             CanHold2 = false;
@@ -143,7 +146,7 @@ namespace Tetris
         {
             return !(Grid.RowEmpty(0) && Grid.RowEmpty(1));
         }
-
+        //Denna funktionen  används för att placera ett block
         private void Place_Block()
         {
             foreach (Position p in CurrentBlock.TilePosistion())
@@ -172,6 +175,8 @@ namespace Tetris
 
             }
         }
+        //Denna funktionen kommer att flytta ditt block nedåt och kommer både styras med knapptryck samt hända konstant under spelets gång.
+        //Precis som i de andra funktionerna som hanterade rörelse kommer den motsatta rörelsen ske om blocket inte får plats dvs det flyttas uppåt.
         public void Block_Move_Down()
         {
             CurrentBlock.Move_Block(1, 0);
@@ -181,31 +186,46 @@ namespace Tetris
                 Place_Block();
             }
         }
-        //Denna funktionen kommer att flytta ditt block nedåt och kommer både styras med knapptryck samt hända konstant under spelets gång.
-        //Precis som i de andra funktionerna som hanterade rörelse kommer den motsatta rörelsen ske om blocket inte får plats dvs det flyttas uppåt.
+        //Denna funktionen räknar ut hur stort mellan rum det är mellan en ruta i ditt nuvarande block och en cell som är 
+        //full. Funktionenv retunerar detta som ett heltal.
+
         private int TileDropDistance(Position p)
         {
+            //Heltalet sätts till noll och ökar varje iteration av kommande loop//
             int drop = 0;
+            //Programet använder funktionen CellEmpty på varje ruta under ditt blocks ruta tills den stöter på 
+            // en som inte är tom. Den gör detta genom att läsa av vilken column och rad som rutan befiner sig på.
+            //Genom att öka drop varje iteration och sen addera den med blockets rad nummer samt för att sen öka 
+            //summan med ett förflyttar sig programet ned åt i kolumnen. 
             while (Grid.CellEmpty(p.Row + drop + 1, p.Column))
             {
                 drop++;
             }
             return drop;
+            //I slutet av programet retuneras heltalet drop//
         }
-
+        //Den här funktionen räknar ut samma sak som den förra fast applicerar det till hela ditt block.
+        //Funktionen retunerar sin beräning som ett heltal.//
         public int BlockDropDistance()
         {
+            //Ett heltal sätts som antalet rader på rutnätet.//
             int drop = Grid.Rows;
             foreach (Position p in CurrentBlock.TilePosistion())
             {
+                //Programet jämför detta heltalet drop med TileDropDistancen med varje ruta, det minsta av dessa 
+                // två kommer sättas som drop, efter den sista itterationen har programet räknat ut hur långt blocket kan 
+                // falla utan att en ruta hamnar i en cell som redan är fylld.//
                 drop = System.Math.Min(drop, TileDropDistance(p));
                
             }
 
             return drop;
         }
+        //Denna funktionen gör så att blocket faller ner och placeras direkt utan att behöva använda Move_Block down.//
+        //
         public void DropBlock()
         {
+            //Blockets rad
             CurrentBlock.Move_Block(BlockDropDistance(), 0);
             Place_Block();
         }
