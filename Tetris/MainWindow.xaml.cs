@@ -177,6 +177,7 @@ namespace Tetris
             NextText.Visibility = Visibility.Hidden;
             StartScreen.Visibility = Visibility.Visible;
         }
+        private bool NewDif_Wanted { get; private set}
         //Denna funktionen "gömmer" alla spelets "delar" och kommer användas när man vill gå tillbaka till start skärmen.//
         private void DrawGhostBlock(Block block)
         {
@@ -312,7 +313,12 @@ namespace Tetris
         {
             Show_Game();
             delayDecrease = 10;
+            if(NewDif_Wanted == true)
+            {
+                Return_Click();
+            }
             await GameLoop();
+            
         }
 
         private async void Two_Click(object sender, RoutedEventArgs e)
